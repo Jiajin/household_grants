@@ -155,7 +155,6 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-    <Compile Include="BC\GovtGrantBC.cs" />
     <Compile Include="Controllers\GovtGrantController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
@@ -164,6 +163,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\FamilyMember.cs" />
+    <Compile Include="Models\Constants.cs" />
     <Compile Include="Models\Household.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

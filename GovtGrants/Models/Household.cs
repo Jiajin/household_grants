@@ -7,13 +7,13 @@ namespace GovtGrants.Models
 {
     public class Household
     {
-        public int householdId { get; set; }
-        public string housingType { get; set; }
-        public List<string> IsValid (Household household)
+        public int HouseholdId { get; set; }
+        public string HousingType { get; set; }
+        public List<string> IsValid ()
         {
             var errorList = new List<string>();
 
-            if (!Constants.HousingType.Contains(household.housingType))
+            if (!Constants.HousingType.Contains(this.HousingType))
             {
                 errorList.Add("Housing Type is invalid");
             }

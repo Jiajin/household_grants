@@ -20,30 +20,50 @@ namespace GovtGrants.Controllers
         }
 
         // GET api/GovtGrant/5
-        public Household Get(int id)
+        public int Get(int id)
         {
-            var dal = new GovtGrantDAL();
-            var result = dal.GetHousehold("1");
-            return result;
+            return 0;
         }
-        [Route("Get2/{id:int}")]
-        public Household Get2(int id)
-        {
-            var dal = new GovtGrantDAL();
-            var result = dal.GetHousehold("1");
-            return result;
-        }
+        //[Route("Get2/{id:int}")]
+        //public Household Get2(int id)
+        //{
+        //    var dal = new GovtGrantDAL();
+        //    var result = dal.GetHousehold("1");
+        //    return result;
+        //}
         [HttpPost]
-        //[Route("InsertHousehold")]
-        public int InsertHousehold(int id)
+        [Route("CreateHousehold")]
+        public ResponseObj CreateHousehold(string housingType)
         {
             var dal = new GovtGrantDAL();
             var newHousehold = new Household
             {
-                householdId = 97,
-                housingType = "Landed"
+                HousingType = housingType
             };
-            var result = dal.InsertHousehold(newHousehold);
+
+            //Validation
+            var errors = newHousehold.IsValid();
+            if (errors.Count > 0)
+            {
+                //error todo
+
+                return PrepareResponse(false, "");
+            }
+            else
+            {
+                var result = dal.InsertHousehold(newHousehold);
+
+                return PrepareResponse(true, newHousehold);
+            }
+
+        }
+
+        [HttpPost]
+        [Route("ListHousehold")]
+        public List<Household> ListHousehold()
+        {
+            var dal = new GovtGrantDAL();
+            var result = dal.ListHousehold();
             return result;
         }
 
@@ -60,6 +80,17 @@ namespace GovtGrants.Controllers
         // DELETE api/GovtGrant/5
         public void Delete(int id)
         {
+        }
+
+        private ResponseObj PrepareResponse(bool status, object response)
+        {
+            var newResponse = new ResponseObj
+            {
+                IsSuccess = status,
+                Timestamp = DateTime.Now,
+                Message = response
+            };
+            return newResponse;
         }
     }
 }

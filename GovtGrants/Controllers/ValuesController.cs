@@ -18,11 +18,9 @@ namespace GovtGrants.Controllers
         }
 
         // GET api/values/5
-        public Household Get(int id)
+        public int Get(int id)
         {
-            var dal = new GovtGrantDAL();
-            var result = dal.GetHousehold("1");
-            return result;
+            return 0;
         }
 
         // POST api/values

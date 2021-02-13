@@ -16,37 +16,47 @@ namespace GovtGrants.DAL
         {
             return null;
         }
-        public Household GetHousehold(string id)
+        public List<Household> ListHousehold()
         {
-            //string connString = @"server=(local);initial     catalog=MyDatabase;Integrated Security=SSPI;";
+            var result = new List<Household>();
+
+            var sql = @"SELECT 
+                            HouseholdId,
+                            HousingType 
+                        FROM govt_system.dbo.Household";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT HouseholdId,HousingType FROM govt_system.dbo.Household", conn))
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     SqlDataReader reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
-                        var result = new Household
+                        var house = new Household
                         {
-                            householdId = (int)reader["householdId"],
-                            housingType = reader["housingType"] as string
+                            HouseholdId = (int)reader["householdId"],
+                            HousingType = reader["housingType"] as string
                         };
-                        return result;
+                        result.Add(house);
                     }
                     
                 }
             }
-            return null;
+            return result;
         }
         public int InsertHousehold(Household household)
         {
+            var sql = @"INSERT INTO 
+                        dbo.Household 
+                            (HousingType) 
+                        VALUES 
+                            (@housingType)";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO dbo.Household (HousingType) VALUES (@housingType)", conn))
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("@housingType", household.housingType);
+                    cmd.Parameters.AddWithValue("@housingType", household.HousingType);
 
                     return cmd.ExecuteNonQuery();
                 }

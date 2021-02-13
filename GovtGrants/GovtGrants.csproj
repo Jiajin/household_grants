@@ -165,6 +165,7 @@
     <Compile Include="Models\FamilyMember.cs" />
     <Compile Include="Models\Constants.cs" />
     <Compile Include="Models\Household.cs" />
+    <Compile Include="Models\ResponseObj.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

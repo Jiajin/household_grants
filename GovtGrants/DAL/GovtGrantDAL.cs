@@ -109,7 +109,8 @@ namespace GovtGrants.DAL
         public List<HouseholdSearchResult> SearchSEBHousehold()
         {
             var sql = @"SELECT 
-                          hh.HousingType
+                          hh.HouseholdId
+                          ,hh.HousingType
                           ,fm.Name
                           ,fm.Gender
                           ,fm.MaritalStatus
@@ -117,23 +118,135 @@ namespace GovtGrants.DAL
                           ,fm.OccupationType
                           ,fm.AnnualIncome
                           ,fm.DateOfBirth
-                      FROM 
-                      dbo.Household hh
-                      inner join dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
-                      where hh.HouseholdId in  (
-					  select householdId from (
-						  select
-						  householdId
-						  ,sum(annualIncome) as TotalIncome
-						  
-						  ,min((CONVERT(int,CONVERT(char(8),current_timestamp,112))-CONVERT(char(8),[DateOfBirth],112))/10000)  as MinAge
-						  
-						  ,max((CONVERT(int,CONVERT(char(8),current_timestamp,112))-CONVERT(char(8),[DateOfBirth],112))/10000) as MaxAge
-
-
-						FROM [govt_system].[dbo].[FamilyMember]
-						group by householdId
-						) as HouseholdData where MinAge < 16 and TotalIncome < 150000)";
+                      FROM   dbo.Household hh
+                      INNER JOIN dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
+                      WHERE hh.HouseholdId in  (
+					      SELECT householdId from (
+						      SELECT
+						      householdId
+						      ,sum(annualIncome) as TotalIncome
+						      ,min((CONVERT(int,CONVERT(char(8),current_timestamp,112))-CONVERT(char(8),[DateOfBirth],112))/10000)  as MinAge
+						    FROM govt_system.dbo.FamilyMember
+						    GROUP BY householdId
+						    ) as HouseholdData where MinAge < 16 and TotalIncome < 150000
+                    )";
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                return conn.Query<HouseholdSearchResult>(sql).ToList();
+            }
+        }
+        public List<HouseholdSearchResult> SearchFTSHousehold()
+        {
+            var sql = @"SELECT 
+                          hh.HouseholdId
+                          ,hh.HousingType
+                          ,fm.Name
+                          ,fm.Gender
+                          ,fm.MaritalStatus
+                          ,fm.SpouseName
+                          ,fm.OccupationType
+                          ,fm.AnnualIncome
+                          ,fm.DateOfBirth
+                      FROM dbo.Household hh
+                      INNER JOIN dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
+                      WHERE hh.HouseholdId in  (
+					          select householdId from (
+						          select
+						          householdId
+						          ,min((CONVERT(int,CONVERT(char(8),current_timestamp,112))-CONVERT(char(8),[DateOfBirth],112))/10000)  as MinAge
+						        FROM govt_system.dbo.FamilyMember
+						        group by householdId
+						        ) as HouseholdData where MinAge < 18 )
+						AND hh.householdId in(
+                              select 
+                               distinct householdId
+                                FROM govt_system.dbo.FamilyMember fm1
+	                            where maritalstatus = 'Married' and EXISTS(select fm2.familymemberid from familymember fm2 where fm1.spousename = fm2.name)
+                            )";
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                return conn.Query<HouseholdSearchResult>(sql).ToList();
+            }
+        }
+        public List<HouseholdSearchResult> SearchEBHousehold()
+        {
+            var sql = @"SELECT 
+                          hh.HouseholdId
+                          ,hh.HousingType
+                          ,fm.Name
+                          ,fm.Gender
+                          ,fm.MaritalStatus
+                          ,fm.SpouseName
+                          ,fm.OccupationType
+                          ,fm.AnnualIncome
+                          ,fm.DateOfBirth
+                      FROM   dbo.Household hh
+                      INNER JOIN dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
+                      WHERE hh.HouseholdId in  (
+					      SELECT householdId from (
+						      SELECT
+						      householdId
+						      ,max((CONVERT(int,CONVERT(char(8),current_timestamp,112))-CONVERT(char(8),[DateOfBirth],112))/10000) as MaxAge
+						    FROM govt_system.dbo.FamilyMember
+						    GROUP BY householdId
+						    ) as HouseholdData where MaxAge > 50
+                    )";
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                return conn.Query<HouseholdSearchResult>(sql).ToList();
+            }
+        }
+        public List<HouseholdSearchResult> SearchBSGHousehold()
+        {
+            var sql = @"SELECT 
+                          hh.HouseholdId
+                          ,hh.HousingType
+                          ,fm.Name
+                          ,fm.Gender
+                          ,fm.MaritalStatus
+                          ,fm.SpouseName
+                          ,fm.OccupationType
+                          ,fm.AnnualIncome
+                          ,fm.DateOfBirth
+                      FROM   dbo.Household hh
+                      INNER JOIN dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
+                      WHERE hh.HouseholdId in  (
+					      SELECT householdId from (
+						      SELECT
+						      householdId
+						      ,min((CONVERT(int,CONVERT(char(8),current_timestamp,112))-CONVERT(char(8),[DateOfBirth],112))/10000) as MinAge
+						    FROM govt_system.dbo.FamilyMember
+						    GROUP BY householdId
+						    ) as HouseholdData where MinAge < 5
+                    )";
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                return conn.Query<HouseholdSearchResult>(sql).ToList();
+            }
+        }
+        public List<HouseholdSearchResult> SearchYGGHousehold()
+        {
+            var sql = @"SELECT 
+                          hh.HouseholdId
+                          ,hh.HousingType
+                          ,fm.Name
+                          ,fm.Gender
+                          ,fm.MaritalStatus
+                          ,fm.SpouseName
+                          ,fm.OccupationType
+                          ,fm.AnnualIncome
+                          ,fm.DateOfBirth
+                      FROM   dbo.Household hh
+                      INNER JOIN dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
+                      WHERE hh.HouseholdId in  (
+					      SELECT householdId from (
+						      SELECT
+						      householdId
+						      ,sum(annualIncome) as TotalIncome
+						    FROM govt_system.dbo.FamilyMember
+						    GROUP BY householdId
+						    ) as HouseholdData where TotalIncome < 100000
+                    )";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
                 return conn.Query<HouseholdSearchResult>(sql).ToList();

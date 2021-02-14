@@ -112,7 +112,8 @@ namespace GovtGrants.Controllers
 
             var members = dal.ListHousehold();
 
-            if(members.Count >0)
+            //To nicely arrange Household with nested list of members
+            if (members.Count >0)
             {
                 //Do per household
                 var membersDict = members.GroupBy(x => x.HouseholdId).ToDictionary(x => x.Key, x => x.ToList());
@@ -178,44 +179,77 @@ namespace GovtGrants.Controllers
             return PrepareResponse(true, result);
         }
 
-        //[HttpPost]
-        //[Route("SearchQualifyingHousehold")]
-        //public ResponseObj SearchQualifyingHousehold(string schemeType)
-        //{
-        //    //Check valid schemetype
-        //    if (!Constants.Schemes.Contains(schemeType))
-        //    {
-        //        return PrepareResponse(false, "Invalid SchemeCode. it should be SEB/FTS/EB/BSG/YGG");
-        //    }
-        //    else
-        //    {
-        //        var result = new HouseholdWithMember();
-        //        var members = new List<HouseholdSearchResult>();
-        //        var dal = new GovtGrantDAL();
-        //        switch (schemeType)
-        //        {
-        //            case Constants.Scheme_SEB :
-        //                members = dal.SearchSEBHousehold();
-        //                break;
-        //            default:
-        //                //
-        //                break;
-        //        }
+        [HttpPost]
+        [Route("SearchQualifyingHousehold")]
+        public ResponseObj SearchQualifyingHousehold(string schemeType)
+        {
+            //Check valid schemetype
+            if (!Constants.Schemes.Contains(schemeType))
+            {
+                return PrepareResponse(false, "Invalid SchemeCode. it should be SEB/FTS/EB/BSG/YGG");
+            }
+            else
+            {
+                var result = new List<ListHouseholdReturn>();
+                var members = new List<HouseholdSearchResult>();
+                var dal = new GovtGrantDAL();
+                switch (schemeType)
+                {
+                    case Constants.Scheme_SEB:
+                        members = dal.SearchSEBHousehold();
+                        break;
+                    case Constants.Scheme_FTS:
+                        members = dal.SearchFTSHousehold();
+                        break;
+                    case Constants.Scheme_EB:
+                        members = dal.SearchEBHousehold();
+                        break;
+                    case Constants.Scheme_BSG:
+                        members = dal.SearchBSGHousehold();
+                        break;
+                    case Constants.Scheme_YGG:
+                        members = dal.SearchYGGHousehold();
+                        break;
+                    default:
+                        return PrepareResponse(false, "Invalid SchemeCode. it should be SEB/FTS/EB/BSG/YGG");
+                }
 
-        //        if (members.Count > 0)
-        //        {
-        //            //initialize empty list
-        //            result.Members = new List<HouseholdMember>();
-        //            result.HousingType = members[0].HousingType;
-        //            foreach (var member in members)
-        //            {
-        //                result.Members.Add(member);//Inherited class to allow easy transfer
-        //            }
-        //        }
-        //        return PrepareResponse(true, result);
-        //    }
-        //}
-        
+                //To nicely arrange Household with nested list of members
+                if (members.Count > 0)
+                {
+                    //Do per household
+                    var membersDict = members.GroupBy(x => x.HouseholdId).ToDictionary(x => x.Key, x => x.ToList());
+                    var householdList = members.GroupBy(x => x.HouseholdId).Select(x => x.FirstOrDefault()).ToList();
+
+                    foreach (var hh in householdList)
+                    {
+                        var oneHousehold = new ListHouseholdReturn();
+                        oneHousehold.Members = new List<HouseholdMemberWSpouse>();
+                        oneHousehold.HouseholdId = hh.HouseholdId;
+                        oneHousehold.HousingType = hh.HousingType;
+
+                        var memberList = membersDict[hh.HouseholdId];
+                        foreach (var member in memberList)
+                        {
+                            var newHhMember = new HouseholdMemberWSpouse
+                            {
+                                Name = member.Name,
+                                Gender = member.Gender,
+                                MaritalStatus = member.MaritalStatus,
+                                Spouse = member.Spouse,
+                                OccupationType = member.OccupationType,
+                                AnnualIncome = member.AnnualIncome,
+                                DateOfBirth = member.DateOfBirth
+                            };
+                            oneHousehold.Members.Add(newHhMember);
+                        }
+                        result.Add(oneHousehold);
+                    }
+                }
+                return PrepareResponse(true, result);
+            }
+        }
+
         private ResponseObj PrepareResponse(bool status, object response)
         {
             var newResponse = new ResponseObj

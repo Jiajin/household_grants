@@ -35,6 +35,11 @@ namespace GovtGrants.Controllers
         [Route("CreateHousehold")]
         public ResponseObj CreateHousehold(string housingType)
         {
+            if (housingType is null)
+            {
+                return PrepareResponse(false, "Params/Post data is missing");
+            }
+
             var dal = new GovtGrantDAL();
             var newHousehold = new Household
             {
@@ -45,46 +50,55 @@ namespace GovtGrants.Controllers
             var errors = newHousehold.IsValid();
             if (errors.Count > 0)
             {
-                //append errors to return
-                //var errorMsg = "";
-                //foreach(var error in errors)
-                //{
-                //    errorMsg += error;
-                //}
                 return PrepareResponse(false, String.Join("\n",errors));
             }
             else
             {
-                var result = dal.InsertHousehold(newHousehold);
-
-                return PrepareResponse(true, newHousehold);
+                try
+                {
+                    var result = dal.InsertHousehold(newHousehold);
+                    return PrepareResponse(true, newHousehold);
+                }
+                catch (Exception ex)
+                {
+                    //Log exception message
+                    //By right should return generic messsage to accessor
+                    return PrepareResponse(false, ex.Message);
+                }
             }
-
         }
 
         [HttpPost]
         [Route("AddMember")]
-        public ResponseObj AddMember(FamilyMember member)
+        public ResponseObj AddMember([FromBody]FamilyMember member)
         {
+            if (member is null)
+            {
+                return PrepareResponse(false, "Params/Post data is missing");
+            }
+
             var dal = new GovtGrantDAL();
 
             //Validation
             var errors = member.IsValid();
+            
             if (errors.Count > 0)
             {
-                //append errors to return
-                //var errorMsg = "";
-                //foreach(var error in errors)
-                //{
-                //    errorMsg += error;
-                //}
                 return PrepareResponse(false, String.Join("\n", errors));
             }
             else
             {
-                var result = dal.InsertMember(member);
-
-                return PrepareResponse(true, member);
+                try
+                {
+                    var result = dal.InsertMember(member);
+                    return PrepareResponse(true, result);
+                }
+                catch (Exception ex)
+                {
+                    //Log exception message
+                    //By right should return generic messsage to accessor
+                    return PrepareResponse(false, ex.Message);
+                }                    
             }
 
         }
@@ -102,8 +116,21 @@ namespace GovtGrants.Controllers
         [Route("ShowHousehold")]
         public ResponseObj ShowHousehold(int id)
         {
+            var result = new HouseholdWithMember();
+
             var dal = new GovtGrantDAL();
-            var result = dal.SearchHousehold(id);
+            var members = dal.SearchHousehold(id);
+
+            if (members.Count >0 )
+            {
+                //initialize empty list
+                result.Members = new List<HouseholdMember>();
+                result.HousingType = members[0].HousingType;
+                foreach(var member in members)
+                {
+                    result.Members.Add(member);//Inherited class to allow easy transfer
+                }
+            }
             return PrepareResponse(true, result);
         }
 
@@ -111,25 +138,30 @@ namespace GovtGrants.Controllers
         [Route("SearchQualifyingHousehold")]
         public ResponseObj SearchQualifyingHousehold(string schemeType)
         {
-            var dal = new GovtGrantDAL();
-            var result = dal.SearchHousehold(id);
-            return PrepareResponse(true, result);
-        }
-        // POST api/GovtGrant
-        public void Post([FromBody] string value)
-        {
-        }
+            //Check valid schemetype
+            if (!Constants.Schemes.Contains(schemeType))
+            {
+                return PrepareResponse(false, "Invalid SchemeCode. it should be SEB/FTS/EB/BSG/YGG");
+            }
+            else
+            {
+                var result = new HouseholdWithMember();
+                var dal = new GovtGrantDAL();
+                switch (schemeType)
+                {
+                    case Constants.Scheme_SEB :
+                        //
+                        break;
+                    default:
+                        //
+                        break;
+                }
+                
 
-        // PUT api/GovtGrant/5
-        public void Put(int id, [FromBody] string value)
-        {
+                return PrepareResponse(true, result);
+            }
         }
-
-        // DELETE api/GovtGrant/5
-        public void Delete(int id)
-        {
-        }
-
+        
         private ResponseObj PrepareResponse(bool status, object response)
         {
             var newResponse = new ResponseObj

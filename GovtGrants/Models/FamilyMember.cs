@@ -53,7 +53,7 @@ namespace GovtGrants.Models
                 errorList.Add("Annual Income should be provided for Employed members");
             }
 
-            if(this.DateOfBirth == DateTime.MinValue)
+            if (this.DateOfBirth == DateTime.MinValue)
             {
                 errorList.Add("Date of birth should not be empty");
             }

@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Linq;
 using System.Data.SqlClient;
 using System.Data;
+using Dapper;
 using GovtGrants.Models;
 
 namespace GovtGrants.DAL
@@ -26,103 +27,72 @@ namespace GovtGrants.DAL
                         FROM govt_system.dbo.Household";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        var house = new Household
-                        {
-                            HouseholdId = (int)reader["householdId"],
-                            HousingType = reader["housingType"] as string
-                        };
-                        result.Add(house);
-                    }
-                    
-                }
+                return conn.Query<Household>(sql).ToList();
             }
-            return result;
         }
         public int InsertHousehold(Household household)
         {
-            var sql = @"INSERT INTO 
-                        dbo.Household 
+            var sql = @"INSERT INTO  dbo.Household 
                             (HousingType) 
                         VALUES 
                             (@housingType)";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@housingType", household.HousingType);
-
-                    return cmd.ExecuteNonQuery();
-                }
+                return conn.Execute(sql, household);
             }
         }
 
         public int InsertMember(FamilyMember member)
         {
             //todo
-            var sql = @"INSERT INTO 
-                        dbo.Household 
-                            (HousingType) 
-                        VALUES 
-                            (@housingType)";
+            var sql = @"INSERT INTO dbo.FamilyMember
+                           (HouseholdId
+                           ,Name
+                           ,Gender
+                           ,MaritalStatus
+                           ,SpouseName
+                           ,OccupationType
+                           ,AnnualIncome
+                           ,DateOfBirth)
+                     VALUES
+                           (@householdId
+                           ,@name
+                           ,@gender
+                           ,@maritalStatus 
+                           ,@spouseName
+                           ,@occupationType
+                           ,@annualIncome
+                           ,@dateOfBirth)";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@housingType", member.HouseholdId);
-                    cmd.Parameters.AddWithValue("@housingType", member.Name);
-                    cmd.Parameters.AddWithValue("@housingType", member.Gender);
-                    cmd.Parameters.AddWithValue("@housingType", member.MaritalStatus);
-                    cmd.Parameters.AddWithValue("@housingType", member.SpouseName);
-                    cmd.Parameters.AddWithValue("@housingType", member.OccupationType);
-                    cmd.Parameters.AddWithValue("@housingType", member.AnnualIncome);
-                    cmd.Parameters.AddWithValue("@housingType", member.DateOfBirth);
-
-                    return cmd.ExecuteNonQuery();
-                }
+                return conn.Execute(sql, member);
             }
         }
 
-        public HouseholdWithMember SearchHousehold(int id)
+        public List<HouseholdSearchResult> SearchHousehold(int id)
         {
-            var result = new HouseholdWithMember();
+            var searchId = new HouseholdSearchResult
+            {
+                HouseholdId = id
+            };
 
             var sql = @"SELECT 
-                            HouseholdId,
-                            HousingType 
-                        FROM govt_system.dbo.Household";
+                          hh.HousingType
+                          ,fm.Name
+                          ,fm.Gender
+                          ,fm.MaritalStatus
+                          ,fm.SpouseName
+                          ,fm.OccupationType
+                          ,fm.AnnualIncome
+                          ,fm.DateOfBirth
+                      FROM 
+                      dbo.Household hh
+                      inner join dbo.FamilyMember fm on hh.HouseholdId = fm.HouseholdId 
+                      where hh.HouseholdId = @HouseholdId";
             using (SqlConnection conn = new SqlConnection(ConnString))
             {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@id", id);
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        result.HousingType = reader["HousingType"] as string;
-                        var member = new HouseholdMember
-                        {
-                            Name = reader["name"] as string,
-                            Gender = reader["gender"] as string,
-                            MaritalStatus = reader["maritalStatus"] as string,
-                            OccupationType = reader["occupationType"] as string,
-                            AnnualIncome = (decimal) reader["housingType"],
-                            DateOfBirth = (DateTime) reader["housingType"]
-                        };
-                        result.Members.Add(member);
-                    }
-
-                }
+                return conn.Query<HouseholdSearchResult>(sql, searchId).ToList();
             }
-            return result;
         }
     }
 }

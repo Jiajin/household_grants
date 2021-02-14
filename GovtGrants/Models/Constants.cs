@@ -51,5 +51,19 @@ namespace GovtGrants.Models
         };
         #endregion
 
+        public const string Scheme_SEB = "SEB";
+        public const string Scheme_FTS = "FTS";
+        public const string Scheme_EB = "EB";
+        public const string Scheme_BSG = "BSG";
+        public const string Scheme_YGG = "YGG";
+        public static IEnumerable<string> Schemes = new List<string>
+        {
+            Scheme_SEB,
+            Scheme_FTS,
+            Scheme_EB,
+            Scheme_BSG,
+            Scheme_YGG
+        };
+
     }
 }

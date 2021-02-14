@@ -8,6 +8,7 @@ namespace GovtGrants.Models
     public class FamilyMember
     {
         public int FamilyMemberId { get; set; }
+        public int HouseholdId { get; set; }
         public string Name { get; set; }
         public string Gender { get; set; }
         public string MaritalStatus { get; set; }
@@ -22,6 +23,11 @@ namespace GovtGrants.Models
             if(String.IsNullOrEmpty(this.Name))
             {
                 errorList.Add("Name should not be empty");
+            }
+
+            if(this.HouseholdId <0)
+            {
+                errorList.Add("Invalid Household ID");
             }
 
             if (!Constants.Gender.Contains(this.Gender))

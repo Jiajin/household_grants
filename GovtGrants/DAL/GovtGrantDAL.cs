@@ -63,5 +63,66 @@ namespace GovtGrants.DAL
             }
         }
 
+        public int InsertMember(FamilyMember member)
+        {
+            //todo
+            var sql = @"INSERT INTO 
+                        dbo.Household 
+                            (HousingType) 
+                        VALUES 
+                            (@housingType)";
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@housingType", member.HouseholdId);
+                    cmd.Parameters.AddWithValue("@housingType", member.Name);
+                    cmd.Parameters.AddWithValue("@housingType", member.Gender);
+                    cmd.Parameters.AddWithValue("@housingType", member.MaritalStatus);
+                    cmd.Parameters.AddWithValue("@housingType", member.SpouseName);
+                    cmd.Parameters.AddWithValue("@housingType", member.OccupationType);
+                    cmd.Parameters.AddWithValue("@housingType", member.AnnualIncome);
+                    cmd.Parameters.AddWithValue("@housingType", member.DateOfBirth);
+
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public HouseholdWithMember SearchHousehold(int id)
+        {
+            var result = new HouseholdWithMember();
+
+            var sql = @"SELECT 
+                            HouseholdId,
+                            HousingType 
+                        FROM govt_system.dbo.Household";
+            using (SqlConnection conn = new SqlConnection(ConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        result.HousingType = reader["HousingType"] as string;
+                        var member = new HouseholdMember
+                        {
+                            Name = reader["name"] as string,
+                            Gender = reader["gender"] as string,
+                            MaritalStatus = reader["maritalStatus"] as string,
+                            OccupationType = reader["occupationType"] as string,
+                            AnnualIncome = (decimal) reader["housingType"],
+                            DateOfBirth = (DateTime) reader["housingType"]
+                        };
+                        result.Members.Add(member);
+                    }
+
+                }
+            }
+            return result;
+        }
     }
 }

@@ -168,7 +168,8 @@
     <Compile Include="Models\FamilyMember.cs" />
     <Compile Include="Models\Constants.cs" />
     <Compile Include="Models\HouseholdSearchResult.cs" />
-    <Compile Include="Models\HouseholdWithMember.cs" />
+    <Compile Include="Models\ListHouseholdReturn.cs" />
+    <Compile Include="Models\ShowHouseholdReturn.cs" />
     <Compile Include="Models\Household.cs" />
     <Compile Include="Models\ResponseObj.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

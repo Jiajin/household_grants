@@ -107,8 +107,43 @@ namespace GovtGrants.Controllers
         [Route("ListHousehold")]
         public ResponseObj ListHousehold()
         {
+            var result = new List<ListHouseholdReturn>();
             var dal = new GovtGrantDAL();
-            var result = dal.ListHousehold();
+
+            var members = dal.ListHousehold();
+
+            if(members.Count >0)
+            {
+                //Do per household
+                var membersDict = members.GroupBy(x => x.HouseholdId).ToDictionary(x => x.Key, x => x.ToList());
+                var householdList = members.GroupBy(x => x.HouseholdId).Select(x => x.FirstOrDefault()).ToList();
+
+                foreach (var hh in householdList)
+                {
+                    var oneHousehold = new ListHouseholdReturn();
+                    oneHousehold.Members = new List<HouseholdMemberWSpouse>();
+                    oneHousehold.HouseholdId = hh.HouseholdId;
+                    oneHousehold.HousingType = hh.HousingType;
+
+                    var memberList = membersDict[hh.HouseholdId];
+                    foreach(var member in memberList)
+                    {
+                        var newHhMember = new HouseholdMemberWSpouse
+                        {
+                            Name = member.Name,
+                            Gender = member.Gender,
+                            MaritalStatus = member.MaritalStatus,
+                            Spouse = member.Spouse,
+                            OccupationType = member.OccupationType,
+                            AnnualIncome = member.AnnualIncome,
+                            DateOfBirth = member.DateOfBirth
+                        };
+                        oneHousehold.Members.Add(newHhMember);
+                    }
+                    result.Add(oneHousehold);
+                }
+            }
+
             return PrepareResponse(true, result);
         }
 
@@ -116,7 +151,7 @@ namespace GovtGrants.Controllers
         [Route("ShowHousehold")]
         public ResponseObj ShowHousehold(int id)
         {
-            var result = new HouseholdWithMember();
+            var result = new ShowHouseholdReturn();
 
             var dal = new GovtGrantDAL();
             var members = dal.SearchHousehold(id);
@@ -128,39 +163,58 @@ namespace GovtGrants.Controllers
                 result.HousingType = members[0].HousingType;
                 foreach(var member in members)
                 {
-                    result.Members.Add(member);//Inherited class to allow easy transfer
+                    var newHhMember = new HouseholdMember
+                    {
+                        Name = member.Name,
+                        Gender = member.Gender,
+                        MaritalStatus = member.MaritalStatus,
+                        OccupationType = member.OccupationType,
+                        AnnualIncome = member.AnnualIncome,
+                        DateOfBirth = member.DateOfBirth
+                    };
+                    result.Members.Add(newHhMember);
                 }
             }
             return PrepareResponse(true, result);
         }
 
-        [HttpPost]
-        [Route("SearchQualifyingHousehold")]
-        public ResponseObj SearchQualifyingHousehold(string schemeType)
-        {
-            //Check valid schemetype
-            if (!Constants.Schemes.Contains(schemeType))
-            {
-                return PrepareResponse(false, "Invalid SchemeCode. it should be SEB/FTS/EB/BSG/YGG");
-            }
-            else
-            {
-                var result = new HouseholdWithMember();
-                var dal = new GovtGrantDAL();
-                switch (schemeType)
-                {
-                    case Constants.Scheme_SEB :
-                        //
-                        break;
-                    default:
-                        //
-                        break;
-                }
-                
+        //[HttpPost]
+        //[Route("SearchQualifyingHousehold")]
+        //public ResponseObj SearchQualifyingHousehold(string schemeType)
+        //{
+        //    //Check valid schemetype
+        //    if (!Constants.Schemes.Contains(schemeType))
+        //    {
+        //        return PrepareResponse(false, "Invalid SchemeCode. it should be SEB/FTS/EB/BSG/YGG");
+        //    }
+        //    else
+        //    {
+        //        var result = new HouseholdWithMember();
+        //        var members = new List<HouseholdSearchResult>();
+        //        var dal = new GovtGrantDAL();
+        //        switch (schemeType)
+        //        {
+        //            case Constants.Scheme_SEB :
+        //                members = dal.SearchSEBHousehold();
+        //                break;
+        //            default:
+        //                //
+        //                break;
+        //        }
 
-                return PrepareResponse(true, result);
-            }
-        }
+        //        if (members.Count > 0)
+        //        {
+        //            //initialize empty list
+        //            result.Members = new List<HouseholdMember>();
+        //            result.HousingType = members[0].HousingType;
+        //            foreach (var member in members)
+        //            {
+        //                result.Members.Add(member);//Inherited class to allow easy transfer
+        //            }
+        //        }
+        //        return PrepareResponse(true, result);
+        //    }
+        //}
         
         private ResponseObj PrepareResponse(bool status, object response)
         {

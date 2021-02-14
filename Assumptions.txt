@@ -1,0 +1,15 @@
+
+1. SpouseName is used over SpouseID.
+Reason is due to complexity if each FamilyMember's data is added one by one into the database without the data of what the SpouseID will be, requiring  subsequent post-insert operation updates to update the SpouseID.
+
+
+2. Grant Assumptions
+*A household can qualify for more than 1 grant
+*Less than or More than is not inclusive of the number. eg less than 16 means 15 and below.
+*No proof of parents of children qualifying for grants living in the same household is required.
+*Return data follows the same format as endpoint No.2 List Household
+*Streamlined the Scheme parameters to use the 5 scheme types as an input parameter instead of specifying age and total income.
+
+
+
+
